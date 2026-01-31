@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income Tax Calculator FY 2025-26</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-100">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Tax Calculator</h2>
+        <p class="text-sm text-gray-500 mb-6">FY 2025-26 | New Tax Regime (Default)</p>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Gross Annual Salary (₹)</label>
+                <input type="number" id="grossIncome" placeholder="e.g. 1500000" 
+                    class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+            </div>
+
+            <div class="flex items-center">
+                <input type="checkbox" id="isSalaried" checked class="h-4 w-4 text-blue-600 border-gray-300 rounded">
+                <label for="isSalaried" class="ml-2 text-sm text-gray-600">Apply Standard Deduction (₹75,000)</label>
+            </div>
+
+            <button onclick="calculateTax()" 
+                class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+                Calculate Tax
+            </button>
+        </div>
+
+        <div id="result" class="mt-8 hidden space-y-3 border-t pt-6">
+            <div class="flex justify-between text-gray-600">
+                <span>Taxable Income:</span>
+                <span id="taxableIncome" class="font-medium"></span>
+            </div>
+            <div class="flex justify-between text-gray-600">
+                <span>Basic Tax:</span>
+                <span id="basicTax" class="font-medium"></span>
+            </div>
+            <div class="flex justify-between text-green-600">
+                <span>Rebate (Sec 87A):</span>
+                <span id="rebate" class="font-medium"></span>
+            </div>
+            <div class="flex justify-between text-gray-600">
+                <span>Cess (4%):</span>
+                <span id="cess" class="font-medium"></span>
+            </div>
+            <div class="flex justify-between text-xl font-bold text-gray-900 pt-2">
+                <span>Total Tax:</span>
+                <span id="totalTax"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateTax() {
+            const gross = parseFloat(document.getElementById('grossIncome').value) || 0;
+            const isSalaried = document.getElementById('isSalaried').checked;
+            
+            // 1. Standard Deduction
+            const stdDed = isSalaried ? 75000 : 0;
+            const taxableIncome = Math.max(0, gross - stdDed);
+
+            // 2. Slab Calculation
+            let tax = 0;
+            const slabs = [
+                { limit: 400000, rate: 0.00 },
+                { limit: 800000, rate: 0.05 },
+                { limit: 1200000, rate: 0.10 },
+                { limit: 1600000, rate: 0.15 },
+                { limit: 2000000, rate: 0.20 },
+                { limit: 2400000, rate: 0.25 },
+                { limit: Infinity, rate: 0.30 }
+            ];
+
+            let prevLimit = 0;
+            for (let slab of slabs) {
+                if (taxableIncome > prevLimit) {
+                    const taxableInSlab = Math.min(taxableIncome, slab.limit) - prevLimit;
+                    tax += taxableInSlab * slab.rate;
+                    prevLimit = slab.limit;
+                } else break;
+            }
+
+            // 3. Section 87A Rebate
+            let rebate = 0;
+            if (taxableIncome <= 1200000) {
+                rebate = tax;
+                tax = 0;
+            }
+
+            // 4. Cess
+            const cess = tax * 0.04;
+            const finalTax = tax + cess;
+
+            // Display Results
+            document.getElementById('result').classList.remove('hidden');
+            document.getElementById('taxableIncome').innerText = "₹" + taxableIncome.toLocaleString('en-IN');
+            document.getElementById('basicTax').innerText = "₹" + (tax + rebate).toLocaleString('en-IN');
+            document.getElementById('rebate').innerText = "- ₹" + rebate.toLocaleString('en-IN');
+            document.getElementById('cess').innerText = "₹" + cess.toLocaleString('en-IN');
+            document.getElementById('totalTax').innerText = "₹" + Math.round(finalTax).toLocaleString('en-IN');
+        }
+    </script>
+</body>
+</html>
