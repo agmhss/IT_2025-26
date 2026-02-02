@@ -3,124 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Official Tax Calculator FY 2025-26</title>
+    <title>Income Tax Calculator FY 2025-26</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-4 md:p-10 font-sans text-gray-800">
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6">
 
-    <div class="max-w-2xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-200">
-        <div class="bg-indigo-600 p-6 text-white text-center">
-            <h1 class="text-2xl font-bold">Income Tax Calculator</h1>
-            <p class="opacity-80 text-sm">Based on Finance Bill 2025 (New Regime)</p>
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg border border-slate-200 overflow-hidden">
+        <div class="bg-indigo-700 p-8 text-white">
+            <h1 class="text-2xl font-bold tracking-tight">Tax Calculator FY 2025-26</h1>
+            <p class="text-indigo-200 text-sm mt-1">New Regime (Default) | AY 2026-27</p>
         </div>
 
         <div class="p-8 space-y-6">
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">Gross Annual Income (₹)</label>
-                    <input type="number" id="grossIncome" placeholder="e.g. 1250000" 
-                        class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-indigo-500 outline-none transition-all text-lg font-medium">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Gross Annual Income (₹)</label>
+                    <input type="number" id="grossIncome" placeholder="e.g. 1500000" 
+                        class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white outline-none transition-all text-xl font-semibold">
                 </div>
 
-                <div class="flex items-center p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-                    <input type="checkbox" id="isSalaried" checked class="w-5 h-5 accent-indigo-600">
-                    <div class="ml-3">
-                        <label for="isSalaried" class="font-bold text-indigo-900 block">Salaried / Pensioner</label>
-                        <span class="text-xs text-indigo-700 italic">Includes ₹75,000 Standard Deduction</span>
+                <div class="flex items-center p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                    <input type="checkbox" id="isSalaried" checked class="w-5 h-5 accent-indigo-600 cursor-pointer">
+                    <div class="ml-4">
+                        <label for="isSalaried" class="font-bold text-indigo-900 block cursor-pointer">Salaried / Pensioner</label>
+                        <span class="text-xs text-indigo-600 font-medium">Auto-apply ₹75,000 Standard Deduction</span>
                     </div>
                 </div>
 
-                <button onclick="calculateExactTax()" 
-                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95">
-                    Calculate Exact Tax
+                <button id="calcBtn"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-5 rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98]">
+                    Calculate Net Tax
                 </button>
             </div>
 
-            <div id="resultArea" class="hidden border-t pt-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="p-4 bg-gray-50 rounded-lg">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Taxable Income</p>
-                        <p id="resTaxable" class="text-xl font-bold text-gray-800"></p>
+            <div id="resultArea" class="hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div class="space-y-3 bg-slate-900 rounded-3xl p-6 text-white">
+                    <div class="flex justify-between text-slate-400 text-sm">
+                        <span>Taxable Income:</span>
+                        <span id="resTaxable" class="font-mono text-white"></span>
                     </div>
-                    <div class="p-4 bg-gray-50 rounded-lg">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Slab-wise Tax</p>
-                        <p id="resSlabTax" class="text-xl font-bold text-gray-800"></p>
+                    <div class="flex justify-between text-slate-400 text-sm border-b border-slate-800 pb-3">
+                        <span>Slab Tax (Pre-Rebate):</span>
+                        <span id="resSlabTax" class="font-mono text-white"></span>
                     </div>
-                </div>
+                    
+                    <div id="reliefRow" class="hidden flex justify-between text-emerald-400 text-sm">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1a1 1 0 112 0v1a1 1 0 11-2 0zM13.536 13.536a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 011.414-1.414l.707.707zM16.464 16.464a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707z"></path></svg>
+                            Marginal Relief / Rebate:
+                        </span>
+                        <span id="resRelief" class="font-mono"></span>
+                    </div>
 
-                <div id="reliefBanner" class="hidden p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p class="text-sm text-green-800 font-medium italic">✨ Marginal Relief applied to limit tax to the income excess of ₹12 Lakh.</p>
-                </div>
-
-                <div class="space-y-2 border-b pb-4">
-                    <div class="flex justify-between text-gray-600">
-                        <span>Total Tax (After Relief/Rebate)</span>
-                        <span id="resNetTax" class="font-bold"></span>
+                    <div class="flex justify-between text-slate-400 text-sm">
+                        <span>Health & Education Cess (4%):</span>
+                        <span id="resCess" class="font-mono text-white"></span>
                     </div>
-                    <div class="flex justify-between text-gray-600">
-                        <span>Cess (4% Health & Education)</span>
-                        <span id="resCess" class="font-bold"></span>
-                    </div>
-                </div>
 
-                <div class="flex justify-between items-center bg-gray-900 text-white p-6 rounded-2xl">
-                    <span class="text-lg font-medium">Final Tax Liability</span>
-                    <span id="resTotal" class="text-3xl font-black text-indigo-400"></span>
+                    <div class="pt-4 mt-2 border-t border-slate-800 flex justify-between items-center">
+                        <span class="text-lg font-semibold">Total Tax Liability:</span>
+                        <span id="resTotal" class="text-3xl font-black text-indigo-400"></span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        function calculateExactTax() {
-            const gross = parseFloat(document.getElementById('grossIncome').value) || 0;
+        // Use addEventListener to ensure button works even if browser has security restrictions on inline events
+        document.getElementById('calcBtn').addEventListener('click', function() {
+            const grossInput = document.getElementById('grossIncome').value;
+            if (!grossInput) return alert("Please enter your gross income.");
+
+            const gross = parseFloat(grossInput);
             const isSalaried = document.getElementById('isSalaried').checked;
             
-            [span_6](start_span)// 1. Apply Standard Deduction[span_6](end_span)
+            // 1. Standard Deduction: ₹75,000 for salaried
             const stdDed = isSalaried ? 75000 : 0;
             const taxableIncome = Math.max(0, gross - stdDed);
 
-            [span_7](start_span)// 2. Slab Calculation as per Budget 2025[span_7](end_span)
+            // 2. Official New Regime Slabs FY 2025-26
             let slabTax = 0;
-            if (taxableIncome > 2400000) slabTax += (taxableIncome - 2400000) * 0.30;
-            if (taxableIncome > 2000000) slabTax += (Math.min(taxableIncome, 2400000) - 2000000) * 0.25;
-            if (taxableIncome > 1600000) slabTax += (Math.min(taxableIncome, 2000000) - 1600000) * 0.20;
-            if (taxableIncome > 1200000) slabTax += (Math.min(taxableIncome, 1600000) - 1200000) * 0.15;
-            if (taxableIncome > 800000)  slabTax += (Math.min(taxableIncome, 1200000) - 800000) * 0.10;
-            if (taxableIncome > 400000)  slabTax += (Math.min(taxableIncome, 800000) - 400000) * 0.05;
+            const brackets = [
+                { l: 0, h: 400000, r: 0.00 },
+                { l: 400000, h: 800000, r: 0.05 },
+                { l: 800000, h: 1200000, r: 0.10 },
+                { l: 1200000, h: 1600000, r: 0.15 },
+                { l: 1600000, h: 2000000, r: 0.20 },
+                { l: 2000000, h: 2400000, r: 0.25 },
+                { l: 2400000, h: Infinity, r: 0.30 }
+            ];
 
-            [span_8](start_span)[span_9](start_span)[span_10](start_span)// 3. Section 87A Rebate and Marginal Relief[span_8](end_span)[span_9](end_span)[span_10](end_span)
+            brackets.forEach(b => {
+                if (taxableIncome > b.l) {
+                    slabTax += (Math.min(taxableIncome, b.h) - b.l) * b.r;
+                }
+            });
+
+            // 3. Section 87A Rebate & Marginal Relief
             let netTax = slabTax;
-            let marginalReliefUsed = false;
+            let reliefAmount = 0;
 
             if (taxableIncome <= 1200000) {
-                [span_11](start_span)[span_12](start_span)// Full rebate if income <= 12L[span_11](end_span)[span_12](end_span)
+                // NIL tax for income up to ₹12 Lakh
+                reliefAmount = slabTax;
                 netTax = 0;
             } else {
-                [span_13](start_span)[span_14](start_span)// Calculate Marginal Relief[span_13](end_span)[span_14](end_span)
-                // Tax should not exceed (Income - 12,00,000)
+                // Marginal Relief: Tax restricted to income excess of ₹12 Lakh
                 const excessIncome = taxableIncome - 1200000;
                 if (slabTax > excessIncome) {
+                    reliefAmount = slabTax - excessIncome;
                     netTax = excessIncome;
-                    marginalReliefUsed = true;
                 }
             }
 
-            // 4. Final Aggregation
+            // 4. Cess calculation
             const cess = netTax * 0.04;
-            const totalTax = netTax + cess;
+            const finalTax = netTax + cess;
 
-            // UI Update
+            // Update UI
             document.getElementById('resultArea').classList.remove('hidden');
-            document.getElementById('resTaxable').innerText = "₹" + taxableIncome.toLocaleString('en-IN');
-            document.getElementById('resSlabTax').innerText = "₹" + slabTax.toLocaleString('en-IN');
-            document.getElementById('resNetTax').innerText = "₹" + netTax.toLocaleString('en-IN');
-            document.getElementById('resCess').innerText = "₹" + cess.toLocaleString('en-IN');
-            document.getElementById('resTotal').innerText = "₹" + Math.round(totalTax).toLocaleString('en-IN');
-            
-            const reliefBanner = document.getElementById('reliefBanner');
-            marginalReliefUsed ? reliefBanner.classList.remove('hidden') : reliefBanner.classList.add('hidden');
-        }
+            document.getElementById('resTaxable').innerText = "₹" + Math.round(taxableIncome).toLocaleString('en-IN');
+            document.getElementById('resSlabTax').innerText = "₹" + Math.round(slabTax).toLocaleString('en-IN');
+            document.getElementById('resCess').innerText = "₹" + Math.round(cess).toLocaleString('en-IN');
+            document.getElementById('resTotal').innerText = "₹" + Math.round(finalTax).toLocaleString('en-IN');
+
+            const reliefRow = document.getElementById('reliefRow');
+            if (reliefAmount > 0) {
+                reliefRow.classList.remove('hidden');
+                document.getElementById('resRelief').innerText = "- ₹" + Math.round(reliefAmount).toLocaleString('en-IN');
+            } else {
+                reliefRow.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html>
